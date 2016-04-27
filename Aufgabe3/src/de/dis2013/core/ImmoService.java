@@ -454,8 +454,8 @@ public class ImmoService {
 			Immobilie i = it.next();
 			System.out.println("Immo: "+i.getOrt());
 		}
-		session.close();
 		
+		session.beginTransaction();
 		Wohnung w = new Wohnung();
 		w.setOrt("Hamburg");
 		w.setPlz(22527);
@@ -468,6 +468,8 @@ public class ImmoService {
 		w.setBalkon(false);
 		w.setVerwalter(m);
 		this.addWohnung(w);
+		session.save(w);
+
 		
 		w = new Wohnung();
 		w.setOrt("Berlin");
@@ -481,6 +483,11 @@ public class ImmoService {
 		w.setBalkon(false);
 		w.setVerwalter(m);
 		this.addWohnung(w);
+		
+		session.save(w);
+		session.getTransaction().commit();
+		session.close();
+		
 		
 		Kaufvertrag kv = new Kaufvertrag();
 		kv.setHaus(h);
