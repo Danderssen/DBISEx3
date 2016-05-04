@@ -3,10 +3,12 @@ package de.dis2013.core;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import de.dis2013.data.Haus;
@@ -46,16 +48,12 @@ public class ImmoService {
 	 * @return Makler mit der ID oder null
 	 */
 	public Makler getMaklerById(int id) {
-		Iterator<Makler> it = makler.iterator();
-		
-		while(it.hasNext()) {
-			Makler m = it.next();
-			
-			if(m.getId() == id)
-				return m;
-		}
-		
-		return null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		Makler m = (Makler)session.get(Makler.class, id);
+		tx.commit();
+		session.close();
+		return m;
 	}
 	
 	/**
@@ -64,41 +62,40 @@ public class ImmoService {
 	 * @return Makler mit der ID oder null
 	 */
 	public Makler getMaklerByLogin(String login) {
-		Iterator<Makler> it = makler.iterator();
-		
-		while(it.hasNext()) {
-			Makler m = it.next();
-			
-			if(m.getLogin().equals(login))
-				return m;
-		}
-		
-		return null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		Makler m = (Makler) session.createQuery("from Makler as makler where makler.login = ?").setEntity(0, login).uniqueResult();
+		//Makler m = (Makler)session.get(Makler.class, id);
+		tx.commit();
+		session.close();
+		return m;
 	}
 	
 	/**
 	 * Gibt alle Makler zurück
 	 */
 	public Set<Makler> getAllMakler() {
+		
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Makler> l = (List<Makler>) (List)session.createCriteria(Makler.class).list();
+		tx.commit();
+		session.close();
+		Set<Makler> makler = new HashSet<Makler>(l);
 		return makler;
 	}
-	
 	/**
 	 * Finde eine Person mit gegebener Id
 	 * @param id Die ID der Person
 	 * @return Person mit der ID oder null
 	 */
 	public Person getPersonById(int id) {
-		Iterator<Person> it = personen.iterator();
-		
-		while(it.hasNext()) {
-			Person p = it.next();
-			
-			if(p.getId() == id)
-				return p;
-		}
-		
-		return null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		Person p = (Person)session.get(Person.class, id);
+		tx.commit();
+		session.close();
+		return p;
 	}
 	
 	/**
@@ -106,7 +103,12 @@ public class ImmoService {
 	 * @param m Der Makler
 	 */
 	public void addMakler(Makler m) {
-		makler.add(m);
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.save(m);
+		session.getTransaction().commit();
+		session.close();
+	//	makler.add(m);
 	}
 	
 	/**
@@ -122,13 +124,24 @@ public class ImmoService {
 	 * @param p Die Person
 	 */
 	public void addPerson(Person p) {
-		personen.add(p);
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.save(p);
+		session.getTransaction().commit();
+		session.close();
+	//	personen.add(p);
 	}
 	
 	/**
 	 * Gibt alle Personen zurück
 	 */
 	public Set<Person> getAllPersons() {
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Person> l = (List<Person>) (List)session.createCriteria(Person.class).list();
+		tx.commit();
+		session.close();
+		Set<Person> personen = new HashSet<Person>(l);
 		return personen;
 	}
 	
@@ -145,7 +158,12 @@ public class ImmoService {
 	 * @param h Das Haus
 	 */
 	public void addHaus(Haus h) {
-		haeuser.add(h);
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.save(h);
+		session.getTransaction().commit();
+		session.close();
+	//	haeuser.add(h);
 	}
 	
 	/**
@@ -154,18 +172,15 @@ public class ImmoService {
 	 * @return Alle Häuser, die vom Makler verwaltet werden
 	 */
 	public Set<Haus> getAllHaeuserForMakler(Makler m) {
-		Set<Haus> ret = new HashSet<Haus>();
-		Iterator<Haus> it = haeuser.iterator();
-		
-		while(it.hasNext()) {
-			Haus h = it.next();
-			
-			if(h.getVerwalter().equals(m))
-				ret.add(h);
-		}
-		
-		return ret;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Haus> l = (List<Haus>) session.createQuery("from Haeuser as haus where haus.verwalter = ?").setEntity(0, m.getId()).list();
+		tx.commit();
+		session.close();
+		Set<Haus> haeuser = new HashSet<Haus>(l);
+		return haeuser;
 	}
+		
 	
 	/**
 	 * Findet ein Haus mit gegebener ID
@@ -173,16 +188,12 @@ public class ImmoService {
 	 * @return Das Haus oder null, falls nicht gefunden
 	 */
 	public Haus getHausById(int id) {
-		Iterator<Haus> it = haeuser.iterator();
-		
-		while(it.hasNext()) {
-			Haus h = it.next();
-			
-			if(h.getId() == id)
-				return h;
-		}
-		
-		return null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		Haus h = (Haus)session.get(Haus.class, id);
+		tx.commit();
+		session.close();
+		return h;
 	}
 	
 	/**
@@ -198,7 +209,12 @@ public class ImmoService {
 	 * @param w die Wohnung
 	 */
 	public void addWohnung(Wohnung w) {
-		wohnungen.add(w);
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.save(w);
+		session.getTransaction().commit();
+		session.close();
+	//	wohnungen.add(w);
 	}
 	
 	/**
@@ -207,17 +223,13 @@ public class ImmoService {
 	 * @return Alle Wohnungen, die vom Makler verwaltet werden
 	 */
 	public Set<Wohnung> getAllWohnungenForMakler(Makler m) {
-		Set<Wohnung> ret = new HashSet<Wohnung>();
-		Iterator<Wohnung> it = wohnungen.iterator();
-		
-		while(it.hasNext()) {
-			Wohnung w = it.next();
-			
-			if(w.getVerwalter().equals(m))
-				ret.add(w);
-		}
-		
-		return ret;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Wohnung> l = (List<Wohnung>) session.createQuery("from Wohnungen as wohnung where wohnung.verwalter = ?").setEntity(0, m.getId()).list();
+		tx.commit();
+		session.close();
+		Set<Wohnung> wohnungen = new HashSet<Wohnung>(l);
+		return wohnungen;
 	}
 	
 	/**
@@ -226,16 +238,12 @@ public class ImmoService {
 	 * @return Die Wohnung oder null, falls nicht gefunden
 	 */
 	public Wohnung getWohnungById(int id) {
-		Iterator<Wohnung> it = wohnungen.iterator();
-		
-		while(it.hasNext()) {
-			Wohnung w = it.next();
-			
-			if(w.getId() == id)
-				return w;
-		}
-		
-		return null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		Wohnung w = (Wohnung)session.get(Wohnung.class, id);
+		tx.commit();
+		session.close();
+		return w;
 	}
 	
 	/**
@@ -252,7 +260,12 @@ public class ImmoService {
 	 * @param w Der Mietvertrag
 	 */
 	public void addMietvertrag(Mietvertrag m) {
-		mietvertraege.add(m);
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.save(m);
+		session.getTransaction().commit();
+		session.close();
+	//	mietvertraege.add(m);
 	}
 	
 	/**
@@ -260,7 +273,12 @@ public class ImmoService {
 	 * @param w Der Kaufvertrag
 	 */
 	public void addKaufvertrag(Kaufvertrag k) {
-		kaufvertraege.add(k);
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.save(k);
+		session.getTransaction().commit();
+		session.close();
+	//	kaufvertraege.add(k);
 	}
 	
 	/**
@@ -269,17 +287,13 @@ public class ImmoService {
 	 * @return Alle Mietverträge, die zu Wohnungen gehören, die vom Makler verwaltet werden
 	 */
 	public Set<Mietvertrag> getAllMietvertraegeForMakler(Makler m) {
-		Set<Mietvertrag> ret = new HashSet<Mietvertrag>();
-		Iterator<Mietvertrag> it = mietvertraege.iterator();
-		
-		while(it.hasNext()) {
-			Mietvertrag v = it.next();
-			
-			if(v.getWohnung().getVerwalter().equals(m))
-				ret.add(v);
-		}
-		
-		return ret;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Mietvertrag> l = (List<Mietvertrag>) session.createQuery("from Mietvertrag as mv INNER JOIN Wohnung as w WHERE mv.wohnung = w.id AND w.verwalter = ?").setEntity(0, m.getId()).list();
+		tx.commit();
+		session.close();
+		Set<Mietvertrag> mv = new HashSet<Mietvertrag>(l);
+		return mv;
 	}
 	
 	/**
@@ -307,16 +321,12 @@ public class ImmoService {
 	 * @return Der Mietvertrag oder null, falls nicht gefunden
 	 */
 	public Mietvertrag getMietvertragById(int id) {
-		Iterator<Mietvertrag> it = mietvertraege.iterator();
-		
-		while(it.hasNext()) {
-			Mietvertrag m = it.next();
-			
-			if(m.getId() == id)
-				return m;
-		}
-		
-		return null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		Mietvertrag m = (Mietvertrag)session.get(Mietvertrag.class, id);
+		tx.commit();
+		session.close();
+		return m;
 	}
 	
 	/**
@@ -363,16 +373,12 @@ public class ImmoService {
 	 * @return Der Kaufvertrag oder null, falls nicht gefunden
 	 */
 	public Kaufvertrag getKaufvertragById(int id) {
-		Iterator<Kaufvertrag> it = kaufvertraege.iterator();
-		
-		while(it.hasNext()) {
-			Kaufvertrag k = it.next();
-			
-			if(k.getId() == id)
-				return k;
-		}
-		
-		return null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		Kaufvertrag k = (Kaufvertrag)session.get(Kaufvertrag.class, id);
+		tx.commit();
+		session.close();
+		return k;
 	}
 	
 	/**
@@ -390,7 +396,6 @@ public class ImmoService {
 		//Hibernate Session erzeugen
 		Session session = sessionFactory.openSession();
 		
-		session.beginTransaction();
 		
 		Makler m = new Makler();
 		m.setName("Max Mustermann");
@@ -400,10 +405,7 @@ public class ImmoService {
 		
 		//TODO: Dieser Makler wird im Speicher und der DB gehalten
 		this.addMakler(m);
-		session.save(m);
-		session.getTransaction().commit();
 
-		session.beginTransaction();
 		
 		Person p1 = new Person();
 		p1.setAdresse("Informatikum");
@@ -416,16 +418,10 @@ public class ImmoService {
 		p2.setNachname("Albers");
 		p2.setVorname("Hans");
 		
-		session.save(p1);
-		session.save(p2);
-		
 		//TODO: Diese Personen werden im Speicher und der DB gehalten
 		this.addPerson(p1);
 		this.addPerson(p2);
-		session.getTransaction().commit();
-		
-		//Hibernate Session erzeugen
-		session.beginTransaction();
+
 		Haus h = new Haus();
 		h.setOrt("Hamburg");
 		h.setPlz(22527);
@@ -437,11 +433,10 @@ public class ImmoService {
 		h.setGarten(true);
 		h.setVerwalter(m);
 		
-		session.save(h);
 		
 		//TODO: Dieses Haus wird im Speicher und der DB gehalten
 		this.addHaus(h);
-		session.getTransaction().commit();
+
 		
 		//Hibernate Session erzeugen
 		session = sessionFactory.openSession();
@@ -455,7 +450,6 @@ public class ImmoService {
 			System.out.println("Immo: "+i.getOrt());
 		}
 		
-		session.beginTransaction();
 		Wohnung w = new Wohnung();
 		w.setOrt("Hamburg");
 		w.setPlz(22527);
@@ -468,7 +462,6 @@ public class ImmoService {
 		w.setBalkon(false);
 		w.setVerwalter(m);
 		this.addWohnung(w);
-		session.save(w);
 
 		
 		w = new Wohnung();
@@ -483,12 +476,7 @@ public class ImmoService {
 		w.setBalkon(false);
 		w.setVerwalter(m);
 		this.addWohnung(w);
-		
-		session.save(w);
-		session.getTransaction().commit();
-		session.close();
-		
-		
+
 		Kaufvertrag kv = new Kaufvertrag();
 		kv.setHaus(h);
 		kv.setVertragspartner(p1);
@@ -498,7 +486,7 @@ public class ImmoService {
 		kv.setAnzahlRaten(5);
 		kv.setRatenzins(4);
 		this.addKaufvertrag(kv);
-		
+
 		Mietvertrag mv = new Mietvertrag();
 		mv.setWohnung(w);
 		mv.setVertragspartner(p2);
@@ -509,5 +497,7 @@ public class ImmoService {
 		mv.setNebenkosten(65);
 		mv.setDauer(36);
 		this.addMietvertrag(mv);
+		
+		session.close();
 	}
 }

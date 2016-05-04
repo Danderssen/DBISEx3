@@ -18,6 +18,7 @@
 			<property name="stockwerke" type="integer" column="stockwerke" />
 			<property name="kaufpreis" type="integer" column="kaufpreis" />
 			<property name="garten" type="boolean" column="garten" />
+			
 		</union-subclass>
 
 		<union-subclass name="de.dis2013.data.Wohnung" table="wohnungen">
