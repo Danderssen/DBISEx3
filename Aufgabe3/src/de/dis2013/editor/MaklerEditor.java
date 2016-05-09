@@ -1,5 +1,7 @@
 package de.dis2013.editor;
 
+import org.hibernate.Session;
+
 import de.dis2013.core.ImmoService;
 import de.dis2013.data.Makler;
 import de.dis2013.menu.MaklerSelectionMenu;
@@ -99,6 +101,8 @@ public class MaklerEditor {
 				m.setLogin(new_login);
 			if(!new_password.equals(""))
 				m.setPasswort(new_password);
+			
+			service.updateMakler(m);
 		}
 	}
 	

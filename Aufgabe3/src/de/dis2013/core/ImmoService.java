@@ -28,12 +28,12 @@ import de.dis2013.data.Wohnung;
  */
 public class ImmoService {
 	//Datensätze im Speicher
-	private Set<Makler> makler = new HashSet<Makler>();
-	private Set<Person> personen = new HashSet<Person>();
-	private Set<Haus> haeuser = new HashSet<Haus>();
-	private Set<Wohnung> wohnungen = new HashSet<Wohnung>();
-	private Set<Mietvertrag> mietvertraege = new HashSet<Mietvertrag>();
-	private Set<Kaufvertrag> kaufvertraege = new HashSet<Kaufvertrag>();
+	//private Set<Makler> makler = new HashSet<Makler>();
+	//private Set<Person> personen = new HashSet<Person>();
+	//private Set<Haus> haeuser = new HashSet<Haus>();
+	//private Set<Wohnung> wohnungen = new HashSet<Wohnung>();
+	//private Set<Mietvertrag> mietvertraege = new HashSet<Mietvertrag>();
+	//private Set<Kaufvertrag> kaufvertraege = new HashSet<Kaufvertrag>();
 	
 	//Hibernate Session
 	private SessionFactory sessionFactory;
@@ -64,7 +64,8 @@ public class ImmoService {
 	public Makler getMaklerByLogin(String login) {
 		Session session = sessionFactory.openSession();
 		Transaction tx = session.beginTransaction();
-		Makler m = (Makler) session.createQuery("from Makler as makler where makler.login = ?").setEntity(0, login).uniqueResult();
+		//List<Makler> l = (List<Makler>) (List) session.createQuery("from Makler as makler where makler.login = ?").setString(0, login).list();
+		Makler m = (Makler) session.createQuery("from Makler as makler where makler.login = ?").setString(0, login).uniqueResult();
 		//Makler m = (Makler)session.get(Makler.class, id);
 		tx.commit();
 		session.close();
@@ -116,7 +117,9 @@ public class ImmoService {
 	 * @param m Der Makler
 	 */
 	public void deleteMakler(Makler m) {
-		makler.remove(m);
+		Session session = sessionFactory.openSession();
+		session.delete(m);
+		session.close();
 	}
 	
 	/**
@@ -150,8 +153,10 @@ public class ImmoService {
 	 * @param p Die Person
 	 */
 	public void deletePerson(Person p) {
-		personen.remove(p);
-	}
+		Session session = sessionFactory.openSession();
+		session.delete(p);
+		session.close();	
+		}
 	
 	/**
 	 * Fügt ein Haus hinzu
@@ -201,7 +206,9 @@ public class ImmoService {
 	 * @param p Das Haus
 	 */
 	public void deleteHouse(Haus h) {
-		haeuser.remove(h);
+		Session session = sessionFactory.openSession();
+		session.delete(h);
+		session.close();
 	}
 	
 	/**
@@ -251,7 +258,9 @@ public class ImmoService {
 	 * @param p Die Wohnung
 	 */
 	public void deleteWohnung(Wohnung w) {
-		wohnungen.remove(w);
+		Session session = sessionFactory.openSession();
+		session.delete(w);
+		session.close();
 	}
 	
 	
@@ -302,17 +311,13 @@ public class ImmoService {
 	 * @return Alle Kaufverträge, die zu Häusern gehören, die vom Makler verwaltet werden
 	 */
 	public Set<Kaufvertrag> getAllKaufvertraegeForMakler(Makler m) {
-		Set<Kaufvertrag> ret = new HashSet<Kaufvertrag>();
-		Iterator<Kaufvertrag> it = kaufvertraege.iterator();
-		
-		while(it.hasNext()) {
-			Kaufvertrag k = it.next();
-			
-			if(k.getHaus().getVerwalter().equals(m))
-				ret.add(k);
-		}
-		
-		return ret;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Kaufvertrag> l = (List<Kaufvertrag>) session.createQuery("from Mietvertrag as mv INNER JOIN Wohnung as w WHERE mv.wohnung = w.id AND w.verwalter = ?").setEntity(0, m.getId()).list();
+		tx.commit();
+		session.close();
+		Set<Kaufvertrag> kv = new HashSet<Kaufvertrag>(l);
+		return kv;
 	}
 	
 	/**
@@ -335,17 +340,13 @@ public class ImmoService {
 	 * @return Set aus Mietverträgen
 	 */
 	public Set<Mietvertrag> getMietvertragByVerwalter(Makler m) {
-		Set<Mietvertrag> ret = new HashSet<Mietvertrag>();
-		Iterator<Mietvertrag> it = mietvertraege.iterator();
-		
-		while(it.hasNext()) {
-			Mietvertrag mv = it.next();
-			
-			if(mv.getWohnung().getVerwalter().getId() == m.getId())
-				ret.add(mv);
-		}
-		
-		return ret;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Mietvertrag> l = (List<Mietvertrag>) session.createQuery("from Mietvertrag as mv INNER JOIN Wohnung as w WHERE mv.wohnung = w.id AND w.verwalter = ?").setEntity(0, m.getId()).list();
+		tx.commit();
+		session.close();
+		Set<Mietvertrag> mv = new HashSet<Mietvertrag>(l);
+		return mv;
 	}
 	
 	/**
@@ -354,17 +355,13 @@ public class ImmoService {
 	 * @return Set aus Kaufverträgen
 	 */
 	public Set<Kaufvertrag> getKaufvertragByVerwalter(Makler m) {
-		Set<Kaufvertrag> ret = new HashSet<Kaufvertrag>();
-		Iterator<Kaufvertrag> it = kaufvertraege.iterator();
-		
-		while(it.hasNext()) {
-			Kaufvertrag k = it.next();
-			
-			if(k.getHaus().getVerwalter().getId() == m.getId())
-				ret.add(k);
-		}
-		
-		return ret;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		List<Kaufvertrag> l = (List<Kaufvertrag>) session.createQuery("from Mietvertrag as mv INNER JOIN Wohnung as w WHERE mv.wohnung = w.id AND w.verwalter = ?").setEntity(0, m.getId()).list();
+		tx.commit();
+		session.close();
+		Set<Kaufvertrag> kv = new HashSet<Kaufvertrag>(l);
+		return kv;
 	}
 	
 	/**
@@ -381,12 +378,39 @@ public class ImmoService {
 		return k;
 	}
 	
+	public void updateMakler(Makler m)
+	{
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		session.update(m);
+		tx.commit();
+		session.close();
+	}
+	public void updatePerson(Person p)
+	{
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		session.update(p);
+		tx.commit();
+		session.close();
+	}
+	public void updateApartment(Wohnung w)
+	{
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		session.update(w);
+		tx.commit();
+		session.close();
+	}
+	
 	/**
 	 * Löscht einen Mietvertrag
 	 * @param m Der Mietvertrag
 	 */
 	public void deleteMietvertrag(Mietvertrag m) {
-		wohnungen.remove(m);
+		Session session = sessionFactory.openSession();
+		session.delete(m);
+		session.close();
 	}
 	
 	/**
@@ -395,7 +419,6 @@ public class ImmoService {
 	public void addTestData() {
 		//Hibernate Session erzeugen
 		Session session = sessionFactory.openSession();
-		
 		
 		Makler m = new Makler();
 		m.setName("Max Mustermann");
